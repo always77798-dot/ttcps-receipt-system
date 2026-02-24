@@ -379,15 +379,14 @@ export default function App() {
                 <tbody className="divide-y">
                   {records.map((r, i) => (
                     <tr key={i} className="hover:bg-blue-50 transition-colors">
+                      {/* 1. 收據編號 / 登錄時間 */}
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900">
                           {r.id || "-"}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {r.timestamp ? (() => {
-                            // 1. 先做 AM/PM 轉換
                             const formatted = r.timestamp.replace("AM", "上午").replace("PM", "下午");
-                            // 2. 找出第一個空白的位置 (用來區分日期與時間)
                             const spaceIndex = formatted.indexOf(" ");
                             
                             if (spaceIndex !== -1) {
@@ -404,7 +403,20 @@ export default function App() {
                           })() : "-"}
                         </div>
                       </td>
+                      
+                      {/* 2. 請領人 */}
+                      <td className="px-4 py-3 text-gray-700">{r.applicantName || "-"}</td>
+                      
+                      {/* 3. 繳款人 / 機關名稱 */}
+                      <td className="px-4 py-3 text-gray-700">{r.payer || "-"}</td>
+                      
+                      {/* 4. 事由明細 */}
+                      <td className="px-4 py-3 text-gray-600 truncate max-w-xs" title={r.reason}>{r.reason || "-"}</td>
+
+                      {/* 5. 金額 */}
                       <td className="px-4 py-3 text-right font-bold text-gray-900">${formatCurrency(r.amount)}</td>
+                      
+                      {/* 6. 操作 */}
                       <td className="px-4 py-3 text-center">
                         <button onClick={() => { setCurrentRecord(r); setView('receipt'); }} className="text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded whitespace-nowrap font-medium">
                           查看
