@@ -1,1 +1,0 @@
-# ttcps-receipt-system
