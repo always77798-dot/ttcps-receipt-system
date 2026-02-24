@@ -78,11 +78,11 @@ export default function App() {
     email: '',
     applicantName: '',
     payer: '',
-    incomeSubject: '學校自收款',
+    incomeSubject: '',
     subjectCode: '',
     amount: '',
     reason: '',
-    documentNumber: '無'
+    documentNumber: ''
   });
 
   // 元件載入時，嘗試從 localStorage 讀取上次存的信箱
@@ -121,7 +121,7 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.applicantName || !formData.payer || !formData.amount || !formData.email) {
+    if (!formData.applicantName || !formData.payer || !formData.amount || !formData.incomeSubject || !formData.subjectCode || !formData.reason|| !formData.documentNumber) {
       alert("請填寫必要資訊！");
       return;
     }
@@ -207,7 +207,7 @@ export default function App() {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-2">
               <FileText className="w-6 h-6" />
-              <span className="font-bold text-lg tracking-wider">新北市土城國民小學 收款收據系統</span>
+              <span className="font-bold text-lg tracking-wider">收款收據系統</span>
             </div>
             <div className="flex space-x-2 items-center">
               <button onClick={() => setView('form')} className={`px-3 py-2 rounded-md text-sm font-medium ${view === 'form' ? 'bg-blue-900' : 'hover:bg-blue-700'}`}>新增收據</button>
@@ -230,8 +230,8 @@ export default function App() {
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">電子郵件地址 *</label>
-                  <input type="email" name="email" required value={formData.email} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="example@mail.ttcps.ntpc.edu.tw" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">電子郵件地址</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="example@mail.ttcps.ntpc.edu.tw" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">請領人(填表人)姓名 *</label>
@@ -242,25 +242,25 @@ export default function App() {
                   <input type="text" name="payer" required value={formData.payer} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">金額 (新臺幣) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">金額 (新臺幣，請填入阿拉伯數字。) *</label>
                   <input type="number" name="amount" required min="0" value={formData.amount} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                   {formData.amount && <p className="mt-1 text-sm text-blue-600">大寫：{convertNumberToChinese(formData.amount)}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">收入科目</label>
-                  <input type="text" name="incomeSubject" value={formData.incomeSubject} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如：學校自收款、市政府補助款" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">收入科目 *</label>
+                  <input type="text" name="incomeSubject" required value={formData.incomeSubject} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如：學校自收款、市政府補助款、中央補助款" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">科目代號</label>
-                  <input type="text" name="subjectCode" value={formData.subjectCode} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如：L24007" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">科目代號 *</label>
+                  <input type="text" name="subjectCode" required value={formData.subjectCode} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如：L20022" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">事由 *</label>
                   <input type="text" name="reason" required value={formData.reason} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">公文字號</label>
-                  <input type="text" name="documentNumber" value={formData.documentNumber} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">公文字號 *</label>
+                  <input type="text" name="documentNumber" required value={formData.documentNumber} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
               </div>
               <div className="pt-4 border-t flex justify-end">
