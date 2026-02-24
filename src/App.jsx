@@ -380,17 +380,29 @@ export default function App() {
                   {records.map((r, i) => (
                     <tr key={i} className="hover:bg-blue-50 transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{r.id || '-'}</div>
-                        <div className="text-xs text-gray-500">{r.timestamp ? r.timestamp.replace('AM', '上午').replace('PM', '下午') : '-'}</div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-800">{r.applicantName || '-'}</td>
-                      <td className="px-4 py-3 text-gray-900 font-medium">{r.payer || '-'}</td>
-                      <td className="px-4 py-3">
-                         <div className="text-gray-800 font-medium mb-1">{r.reason || '-'}</div>
-                         <div className="text-xs text-gray-500 flex flex-wrap gap-x-3 gap-y-1">
-                            {r.documentNumber && r.documentNumber !== '無' && <span>📝 {r.documentNumber}</span>}
-                            {(r.incomeSubject || r.subjectCode) && <span>📂 {r.incomeSubject} {r.subjectCode ? `(${r.subjectCode})` : ''}</span>}
-                         </div>
+                        <div className="font-medium text-gray-900">
+                          {r.id || "-"}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {r.timestamp ? (() => {
+                            // 1. 先做 AM/PM 轉換
+                            const formatted = r.timestamp.replace("AM", "上午").replace("PM", "下午");
+                            // 2. 找出第一個空白的位置 (用來區分日期與時間)
+                            const spaceIndex = formatted.indexOf(" ");
+                            
+                            if (spaceIndex !== -1) {
+                              const datePart = formatted.substring(0, spaceIndex);
+                              const timePart = formatted.substring(spaceIndex + 1);
+                              return (
+                                <>
+                                  <div>{datePart}</div>
+                                  <div>{timePart}</div>
+                                </>
+                              );
+                            }
+                            return formatted;
+                          })() : "-"}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right font-bold text-gray-900">${formatCurrency(r.amount)}</td>
                       <td className="px-4 py-3 text-center">
