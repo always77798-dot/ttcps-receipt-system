@@ -207,7 +207,7 @@ export default function App() {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-2">
               <FileText className="w-6 h-6" />
-              <span className="font-bold text-lg tracking-wider">收款收據系統</span>
+              <span className="font-bold text-lg tracking-wider">新北市土城國民小學 收款收據系統</span>
             </div>
             <div className="flex space-x-2 items-center">
               <button onClick={() => setView('form')} className={`px-3 py-2 rounded-md text-sm font-medium ${view === 'form' ? 'bg-blue-900' : 'hover:bg-blue-700'}`}>新增收據</button>
