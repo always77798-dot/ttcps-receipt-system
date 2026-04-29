@@ -235,11 +235,11 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">請領人(填表人)姓名 *</label>
-                  <input type="text" name="applicantName" required value={formData.applicantName} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="text" name="applicantName" required value={formData.applicantName} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" autoComplete="name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">繳款人或機關名稱 *</label>
-                  <input type="text" name="payer" required value={formData.payer} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="text" name="payer" required value={formData.payer} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" autoComplete="organization"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">金額 (新臺幣，請填入阿拉伯數字。) *</label>
