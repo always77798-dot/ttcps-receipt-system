@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* 網頁列印專用優化樣式表 */
+@media print {
+  /* 隱藏網頁上所有非收據的控制元素（如導覽列、按鈕等） */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* 僅允許收據主體列印區域顯示 */
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  
+  /* 強制將列印區域定位至頁面最左上角，撐滿版面 */
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* 隱藏瀏覽器預設的頁首頁尾資訊（如 URL、時間、頁碼） */
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+}
+
+/* 強制瀏覽器列印時渲染背景色與邊框 */
+.print-force-adjust {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
