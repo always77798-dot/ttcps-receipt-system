@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from "react";
-import { History, Search, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileQuestion } from "lucide-react";
+import { History, Search, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileQuestion, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { formatNumber, splitTimestamp } from "../utils/format";
 
 /**
- * 收據歷史紀錄列表組件 (含分頁、搜尋與過濾優化)
+ * 收據歷史紀錄列表組件 (含分頁、搜尋、過濾與多欄位交互式排序優化)
  * 
  * @param {Object} props
  * @param {Array} props.records 歷史收據紀錄清單
@@ -17,6 +17,9 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
   // 分頁狀態
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10); // 預設每頁顯示 10 筆
+
+  // 排序狀態 (預設以編號 'id' 降序 'desc' 排序，確保最新/編號最大的收據優先顯示在最前面)
+  const [sortConfig, setSortConfig] = useState({ key: "id", direction: "desc" });
 
   // 1. 搜尋過濾邏輯 (以 useMemo 優化，避免重複計算)
   const filteredRecords = useMemo(() => {
@@ -37,8 +40,72 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
     });
   }, [records, searchQuery]);
 
-  // 2. 分頁計算邏輯
-  const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
+  // 2. 交互式多欄位排序邏輯
+  const sortedRecords = useMemo(() => {
+    const sortableItems = [...filteredRecords];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+
+        // 針對收據編號 'id' 進行智慧數值排序 (例如防止 'TTCPS-10' 排在 'TTCPS-2' 前面)
+        if (sortConfig.key === "id") {
+          const extractNum = (str) => {
+            const match = String(str).match(/\d+/);
+            return match ? Number(match[0]) : 0;
+          };
+          const aNum = extractNum(aVal);
+          const bNum = extractNum(bVal);
+          if (aNum !== bNum) {
+            return sortConfig.direction === "asc" ? aNum - bNum : bNum - aNum;
+          }
+        }
+
+        // 針對金額 'amount' 進行數值排序
+        if (sortConfig.key === "amount") {
+          return sortConfig.direction === "asc"
+            ? Number(aVal) - Number(bVal)
+            : Number(bVal) - Number(aVal);
+        }
+
+        // 針對日期時間戳記 'timestamp' 進行時間軸排序
+        if (sortConfig.key === "timestamp") {
+          const parseGASDate = (str) => {
+            if (!str) return 0;
+            // 將 GAS 時間戳記中的 "上午/下午" 轉回瀏覽器可辨識的 "AM/PM" 進行轉換
+            const normalized = str.replace("上午", "AM").replace("下午", "PM");
+            const parsed = new Date(normalized);
+            return isNaN(parsed) ? 0 : parsed.getTime();
+          };
+          const aTime = parseGASDate(aVal);
+          const bTime = parseGASDate(bVal);
+          if (aTime !== bTime) {
+            return sortConfig.direction === "asc" ? aTime - bTime : bTime - aTime;
+          }
+        }
+
+        // 針對繁體中文欄位 (請領人、繳款人、事由) 進行臺灣繁體拼音/筆劃排序
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortConfig.direction === "asc"
+            ? aVal.localeCompare(bVal, "zh-TW")
+            : bVal.localeCompare(aVal, "zh-TW");
+        }
+
+        // 預設通用排序
+        if (aVal < bVal) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aVal > bVal) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredRecords, sortConfig]);
+
+  // 3. 分頁計算邏輯
+  const totalPages = Math.ceil(sortedRecords.length / pageSize) || 1;
   
   // 當前頁次邊界調整
   const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
@@ -47,12 +114,51 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
   const paginatedRecords = useMemo(() => {
     const startIdx = (safeCurrentPage - 1) * pageSize;
     const endIdx = startIdx + pageSize;
-    return filteredRecords.slice(startIdx, endIdx);
-  }, [filteredRecords, safeCurrentPage, pageSize]);
+    return sortedRecords.slice(startIdx, endIdx);
+  }, [sortedRecords, safeCurrentPage, pageSize]);
+
+  // 排序請求處理器
+  const handleSortRequest = (key) => {
+    let direction = "asc";
+    // 如果點選同一欄位，則切換升降序
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // 排序變更時重設回第一頁
+  };
 
   // 頁次變更處理器
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // 輔助函數：渲染可點選表頭標題
+  const renderSortHeader = (label, sortKey, alignRight = false) => {
+    const isSorted = sortConfig.key === sortKey;
+    return (
+      <th 
+        onClick={() => handleSortRequest(sortKey)}
+        className={`px-6 py-3 font-semibold whitespace-nowrap cursor-pointer select-none hover:bg-gray-100 transition-colors group ${
+          alignRight ? "text-right" : ""
+        }`}
+      >
+        <div className={`flex items-center space-x-1.5 ${alignRight ? "justify-end" : ""}`}>
+          <span>{label}</span>
+          <span className="text-gray-400 group-hover:text-gray-600 transition-colors">
+            {isSorted ? (
+              sortConfig.direction === "asc" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-blue-600 font-bold" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-blue-600 font-bold" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 opacity-30 group-hover:opacity-100 transition-opacity" />
+            )}
+          </span>
+        </div>
+      </th>
+    );
   };
 
   return (
@@ -109,12 +215,12 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
         <table className="w-full text-left border-collapse text-sm">
           <thead>
             <tr className="bg-gray-50/75 text-gray-500 border-b border-gray-200">
-              <th className="px-6 py-3 font-semibold whitespace-nowrap">收據編號 / 登錄時間</th>
-              <th className="px-6 py-3 font-semibold whitespace-nowrap">請領人</th>
-              <th className="px-6 py-3 font-semibold whitespace-nowrap">繳款人 / 機關名稱</th>
-              <th className="px-6 py-3 font-semibold min-w-[200px]">事由明細 / 科目</th>
-              <th className="px-6 py-3 font-semibold text-right whitespace-nowrap">金額</th>
-              <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">操作</th>
+              {renderSortHeader("收據編號", "id")}
+              {renderSortHeader("請領人", "applicantName")}
+              {renderSortHeader("繳款人 / 機關名稱", "payer")}
+              {renderSortHeader("事由明細 / 科目", "reason")}
+              {renderSortHeader("金額", "amount", true)}
+              <th className="px-6 py-3 font-semibold text-center whitespace-nowrap text-gray-400">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
