@@ -229,8 +229,8 @@ function App() {
   const handleClearForm = () => {
     if (window.confirm("確定要清空目前填寫的所有資料嗎？")) {
       setFormData({
-        email: localStorage.getItem("receiptSystemUserEmail") || "",
-        applicantName: localStorage.getItem("receiptSystemUserName") || "",
+        email: "",
+        applicantName: "",
         payer: "",
         incomeSubject: "",
         subjectCode: "",

@@ -189,7 +189,7 @@ export const ReceiptForm = ({ formData, loading, onChange, onSubmit, onClear }) 
             className="px-6 py-2.5 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200 flex items-center justify-center active:scale-95 disabled:opacity-50 self-start w-full sm:w-auto"
           >
             <Eraser className="w-4.5 h-4.5 mr-2" />
-            清空畫面
+            清畫面
           </button>
           
           <button
