@@ -308,6 +308,7 @@ function App() {
               setBackView("history");
               setView("receipt");
             }}
+            onRefresh={() => fetchRecordsHistory(true)}
           />
         )}
       </main>

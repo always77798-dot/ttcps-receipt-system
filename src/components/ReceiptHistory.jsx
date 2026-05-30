@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { History, Search, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileQuestion, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { History, Search, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileQuestion, ArrowUp, ArrowDown, ArrowUpDown, RefreshCw } from "lucide-react";
 import { formatNumber, splitTimestamp } from "../utils/format";
 
 /**
@@ -10,7 +10,7 @@ import { formatNumber, splitTimestamp } from "../utils/format";
  * @param {boolean} props.loading 讀取狀態
  * @param {Function} props.onViewRecord 點擊「查看」收據事件處理器
  */
-export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
+export const ReceiptHistory = ({ records, loading, onViewRecord, onRefresh }) => {
   // 搜尋字串狀態
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -20,6 +20,24 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
 
   // 排序狀態 (預設以編號 'id' 降序 'desc' 排序，確保最新/編號最大的收據優先顯示在最前面)
   const [sortConfig, setSortConfig] = useState({ key: "id", direction: "desc" });
+
+  // 刷新按鈕防刷冷卻機制 (30秒)
+  const [cooldown, setCooldown] = useState(0);
+
+  React.useEffect(() => {
+    let timer;
+    if (cooldown > 0) {
+      timer = setInterval(() => setCooldown(c => c - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  const handleRefreshClick = () => {
+    if (cooldown === 0 && !loading && onRefresh) {
+      onRefresh();
+      setCooldown(30);
+    }
+  };
 
   // 1. 搜尋過濾邏輯 (以 useMemo 優化，避免重複計算)
   const filteredRecords = useMemo(() => {
@@ -172,6 +190,22 @@ export const ReceiptHistory = ({ records, loading, onViewRecord }) => {
             <span className="text-xs bg-blue-100 text-blue-800 py-0.5 px-2 rounded-full font-medium">
               共 {filteredRecords.length} 筆
             </span>
+          )}
+          {/* 防呆冷卻刷新按鈕 */}
+          {onRefresh && (
+            <button
+              onClick={handleRefreshClick}
+              disabled={loading || cooldown > 0}
+              className={`ml-1 p-1.5 rounded-lg flex items-center transition-all ${
+                loading || cooldown > 0 
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95 shadow-sm"
+              }`}
+              title={cooldown > 0 ? `請等待 ${cooldown} 秒後再重新整理` : "強制重新整理"}
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              {cooldown > 0 && <span className="ml-1.5 text-xs font-semibold">{cooldown}s</span>}
+            </button>
           )}
         </div>
 
