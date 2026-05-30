@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Receipt, FilePlus2, History } from "lucide-react";
+import { School, FilePlus2, History } from "lucide-react";
 import { ReceiptForm } from "./components/ReceiptForm";
 import { ReceiptPreview } from "./components/ReceiptPreview";
 import { ReceiptHistory } from "./components/ReceiptHistory";
@@ -13,13 +13,16 @@ const CACHE_KEY_EXPIRE = "ttcps_receipt_records_expire";
 const CACHE_DURATION = 5 * 60 * 1000; // 快取有效期限：5 分鐘
 
 function App() {
-  // 視圖路由：'form' (填表), 'receipt' (收據預覽), 'history' (歷史紀錄)
+  // 視圖路由：'form' (填表), 'draft_preview' (草稿預覽), 'receipt' (正式收據), 'history' (歷史紀錄)
   const [view, setView] = useState("form");
+  
+  // 記住正式收據返回時應該前往的頁面 ('form' 或 'history')
+  const [backView, setBackView] = useState("form");
   
   // 資料庫紀錄列表
   const [records, setRecords] = useState([]);
   
-  // 當前選取查看的單一收據
+  // 當前選取查看的單一收據 (可以是草稿，也可以是正式紀錄)
   const [selectedRecord, setSelectedRecord] = useState(null);
   
   // 網路請求狀態
@@ -100,8 +103,8 @@ function App() {
     }
   }, [view]);
 
-  // 4. 表單提交：新增收據登錄
-  const handleFormSubmit = async (e) => {
+  // 4. 表單提交：切換至「收據預覽」草稿模式
+  const handleFormPreviewSubmit = (e) => {
     e.preventDefault();
 
     // 基礎防呆驗證
@@ -118,11 +121,26 @@ function App() {
       return;
     }
 
-    setLoading(true);
-
     // 將填表人資訊存入 LocalStorage，方便下次自動預填
     localStorage.setItem("receiptSystemUserEmail", formData.email);
     localStorage.setItem("receiptSystemUserName", formData.applicantName);
+
+    // 建立臨時草稿資料
+    const draftRecord = {
+      ...formData,
+      id: "", // 草稿無編號
+      timestamp: "", // 草稿無時間
+      link: "",
+    };
+
+    setSelectedRecord(draftRecord);
+    setBackView("form");
+    setView("draft_preview");
+  };
+
+  // 5. 確認登錄並寫入 Google Sheets 資料庫
+  const handleConfirmRegistration = async (sendEmail) => {
+    setLoading(true);
 
     try {
       // GAS Web App 需要以 text/plain 繞過 CORS preflight options 限制
@@ -133,7 +151,10 @@ function App() {
         },
         body: JSON.stringify({
           action: "addRecord",
-          data: formData,
+          data: {
+            ...formData,
+            sendEmail: sendEmail, // 傳遞用戶是否寄送電子郵件
+          },
         }),
       });
 
@@ -159,8 +180,9 @@ function App() {
         setRecords(updatedRecords);
         sessionStorage.setItem(CACHE_KEY_RECORDS, JSON.stringify(updatedRecords));
 
-        // 設定並切換至收據預覽頁面
+        // 設定並切換至收據正式預覽頁面
         setSelectedRecord(newRecord);
+        setBackView("form");
         setView("receipt");
 
         // 重設部分表單欄位，保留 email 與 applicantName
@@ -171,6 +193,11 @@ function App() {
           reason: "",
           documentNumber: "無",
         }));
+
+        // 開啟瀏覽器列印視窗
+        setTimeout(() => {
+          window.print();
+        }, 300);
       } else {
         alert("提交失敗：" + (result.message || "伺服器無回應"));
       }
@@ -182,6 +209,22 @@ function App() {
     }
   };
 
+  // 6. 複製收據功能：切換回表單並帶入所選收據內容
+  const handleCopyReceipt = (record) => {
+    if (!record) return;
+    setFormData({
+      email: record.email || "",
+      applicantName: record.applicantName || "",
+      payer: record.payer || "",
+      incomeSubject: record.incomeSubject || "",
+      subjectCode: record.subjectCode || "",
+      amount: record.amount || "",
+      reason: record.reason || "",
+      documentNumber: record.documentNumber || "",
+    });
+    setView("form");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* 導覽列 (列印時會自動隱藏) */}
@@ -190,7 +233,7 @@ function App() {
           <div className="flex justify-between h-16">
             {/* Logo 與校名 */}
             <div className="flex items-center space-x-2">
-              <Receipt className="w-6 h-6" />
+              <School className="w-6 h-6" />
               <span className="font-bold text-lg tracking-wider">
                 新北市土城國民小學 收款收據系統
               </span>
@@ -201,7 +244,7 @@ function App() {
               <button
                 onClick={() => setView("form")}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-all ${
-                  view === "form" || view === "receipt"
+                  view === "form" || view === "draft_preview" || view === "receipt"
                     ? "bg-blue-900 shadow-inner"
                     : "hover:bg-blue-700/60"
                 }`}
@@ -232,14 +275,27 @@ function App() {
             formData={formData}
             loading={loading}
             onChange={handleInputChange}
-            onSubmit={handleFormSubmit}
+            onSubmit={handleFormPreviewSubmit}
+          />
+        )}
+
+        {view === "draft_preview" && selectedRecord && (
+          <ReceiptPreview
+            record={selectedRecord}
+            isDraft={true}
+            loading={loading}
+            onBack={() => setView("form")}
+            onConfirm={handleConfirmRegistration}
           />
         )}
 
         {view === "receipt" && selectedRecord && (
           <ReceiptPreview
             record={selectedRecord}
-            onBack={() => setView("form")}
+            isDraft={false}
+            onBack={() => setView(backView)}
+            onBackText={backView === "history" ? "返回歷史紀錄" : "返回新增收據"}
+            onCopy={() => handleCopyReceipt(selectedRecord)}
           />
         )}
 
@@ -249,6 +305,7 @@ function App() {
             loading={fetchingHistory}
             onViewRecord={(rec) => {
               setSelectedRecord(rec);
+              setBackView("history");
               setView("receipt");
             }}
           />
