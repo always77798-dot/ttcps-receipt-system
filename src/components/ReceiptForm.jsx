@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, Mail, User, Users, DollarSign, BookOpen, Hash, AlignLeft, FileEdit, Eye } from "lucide-react";
+import { FileText, Mail, User, Users, DollarSign, BookOpen, Hash, AlignLeft, FileEdit, Eye, Eraser } from "lucide-react";
 import { convertToChineseNumerals } from "../utils/cnNumber";
 
 /**
@@ -11,7 +11,7 @@ import { convertToChineseNumerals } from "../utils/cnNumber";
  * @param {Function} props.onChange 欄位異動處理器
  * @param {Function} props.onSubmit 表單提交處理器 (切換至草稿預覽模式)
  */
-export const ReceiptForm = ({ formData, loading, onChange, onSubmit }) => {
+export const ReceiptForm = ({ formData, loading, onChange, onSubmit, onClear }) => {
   // 阻止 Enter 鍵自動觸發 submit，但允許 button 等正常觸發
   const handleFormKeyDown = (e) => {
     if (e.key === "Enter" && e.target.tagName !== "BUTTON" && e.target.tagName !== "TEXTAREA") {
@@ -180,12 +180,22 @@ export const ReceiptForm = ({ formData, loading, onChange, onSubmit }) => {
           </div>
         </div>
 
-        {/* 提交按鈕 */}
-        <div className="pt-6 border-t border-gray-100 flex justify-end">
+        {/* 提交與清空按鈕 */}
+        <div className="pt-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-4">
+          <button
+            type="button"
+            onClick={onClear}
+            disabled={loading}
+            className="px-6 py-2.5 rounded-xl font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 transition-all duration-200 flex items-center justify-center active:scale-95 disabled:opacity-50 self-start w-full sm:w-auto"
+          >
+            <Eraser className="w-4.5 h-4.5 mr-2" />
+            清空畫面
+          </button>
+          
           <button
             type="submit"
             disabled={loading}
-            className={`px-8 py-3 rounded-xl font-semibold text-white shadow-lg shadow-blue-500/20 flex items-center transition-all duration-200 active:scale-95 ${
+            className={`px-8 py-3 rounded-xl font-semibold text-white shadow-lg shadow-blue-500/20 flex items-center justify-center transition-all duration-200 active:scale-95 w-full sm:w-auto ${
               loading
                 ? "bg-gray-400 cursor-not-allowed shadow-none"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-500/20"

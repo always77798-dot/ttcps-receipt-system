@@ -225,6 +225,22 @@ function App() {
     setView("form");
   };
 
+  // 7. 清空表單按鈕處理器
+  const handleClearForm = () => {
+    if (window.confirm("確定要清空目前填寫的所有資料嗎？")) {
+      setFormData({
+        email: localStorage.getItem("receiptSystemUserEmail") || "",
+        applicantName: localStorage.getItem("receiptSystemUserName") || "",
+        payer: "",
+        incomeSubject: "",
+        subjectCode: "",
+        amount: "",
+        reason: "",
+        documentNumber: "",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* 導覽列 (列印時會自動隱藏) */}
@@ -276,6 +292,7 @@ function App() {
             loading={loading}
             onChange={handleInputChange}
             onSubmit={handleFormPreviewSubmit}
+            onClear={handleClearForm}
           />
         )}
 
