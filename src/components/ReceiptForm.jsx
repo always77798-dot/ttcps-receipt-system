@@ -40,7 +40,7 @@ export const ReceiptForm = ({ formData, loading, onChange, onSubmit, onClear }) 
           <div className="space-y-1.5">
             <label className="text-[13px] font-semibold text-gray-600 flex items-center tracking-wider uppercase">
               <Mail className="w-4 h-4 mr-1.5 text-gray-400" />
-              電子郵件地址
+              電子郵件地址 <span className="text-red-500 ml-0.5">*</span>
             </label>
             <input
               type="email"
