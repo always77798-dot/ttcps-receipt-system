@@ -28,7 +28,7 @@ export const ReceiptForm = ({ formData, loading, onChange, onSubmit, onClear }) 
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-800">建立「收款收據登錄」請領單</h2>
-          <p className="text-xs text-gray-400 mt-0.5">請填寫完整的收費資訊以生成預覽收據草稿</p>
+          <p className="text-xs text-gray-400 mt-0.5">請填寫完整的收款資訊以生成預覽收據草稿</p>
         </div>
       </div>
 
