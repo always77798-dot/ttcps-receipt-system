@@ -246,37 +246,37 @@ function App() {
       {/* 導覽列 (列印時會自動隱藏) */}
       <nav className="bg-blue-800 text-white shadow-md print:hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between items-center min-h-[4rem] py-2">
             {/* Logo 與校名 */}
-            <div className="flex items-center space-x-2">
-              <School className="w-6 h-6" />
-              <span className="font-bold text-lg tracking-wider">
+            <div className="flex items-center space-x-2 flex-1">
+              <School className="w-6 h-6 shrink-0" />
+              <span className="font-bold text-base sm:text-lg tracking-wider leading-tight">
                 新北市土城國民小學 收款收據系統
               </span>
             </div>
 
             {/* 功能分頁切換按鈕 */}
-            <div className="flex space-x-2 items-center">
+            <div className="flex space-x-1 sm:space-x-2 items-center shrink-0 ml-2">
               <button
                 onClick={() => setView("form")}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-all ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-all whitespace-nowrap ${
                   view === "form" || view === "draft_preview" || view === "receipt"
                     ? "bg-blue-900 shadow-inner"
                     : "hover:bg-blue-700/60"
                 }`}
               >
-                <FilePlus2 className="w-4 h-4 mr-1.5" />
+                <FilePlus2 className="w-4 h-4 mr-1.5 shrink-0" />
                 新增收據
               </button>
               <button
                 onClick={() => setView("history")}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-all ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-all whitespace-nowrap ${
                   view === "history"
                     ? "bg-blue-900 shadow-inner"
                     : "hover:bg-blue-700/60"
                 }`}
               >
-                <History className="w-4 h-4 mr-1.5" />
+                <History className="w-4 h-4 mr-1.5 shrink-0" />
                 歷史紀錄
               </button>
             </div>
